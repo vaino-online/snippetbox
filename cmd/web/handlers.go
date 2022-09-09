@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 )
 
 // HTTP Handler functions
@@ -18,6 +20,24 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
+	}
+
+	// Load the home template, or freak out and
+	// throw a 500.
+	ts, err := template.ParseFiles("./ui/html/pages/home.html")
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the template set to write the contents
+	// as the response body. The second argument is dynamic data, which we
+	// don't have yet.
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
 	w.Write([]byte("Hello from Snippetbox"))
