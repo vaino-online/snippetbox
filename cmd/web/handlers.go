@@ -22,25 +22,27 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load the home template, or freak out and
-	// throw a 500.
-	ts, err := template.ParseFiles("./ui/html/pages/home.html")
+	// Initialize a slice containing our templates' file paths
+	// NOTE: Base template must be the first element.
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
+	}
+
+	// Load the templates or freak out and throw a 500.
+	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Execute the template set to write the contents
-	// as the response body. The second argument is dynamic data, which we
-	// don't have yet.
-	err = ts.Execute(w, nil)
+	// Render the base template.
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-
-	w.Write([]byte("Hello from Snippetbox"))
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
