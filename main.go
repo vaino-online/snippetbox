@@ -42,8 +42,7 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 // Main application
 
 func main() {
-	// Initialize a new servemux (aka router), then register the home
-	// function as the handler for the index page
+	// Initialize a new servemux (aka router) to store our URL paths.
 	mux := http.NewServeMux()
 
 	// Go's servemux supports two different types of URL patterns: fixed
@@ -52,12 +51,21 @@ func main() {
 	// Subtree path patterns are matched (and handled) whenever the start
 	// of a request URL matches the subtree path. Imagine a wildcard at
 	// the end of them: / = /**, /static/ = /static/**.
-
+	// NOTES:
+	// - Longer URL patterns take precedence over shorter ones.
+	// - Request URL paths are automatically sanitized and the user
+	//   redirected (if needed).
+	// - If a subtree path is registered and a request to it without a
+	//   trailing slash is received, user will be sent a 301 Permanent
+	//   Redirect to the subtree path with the slash added.
+	// - URL patterns can contain hostnames like this:
+	//   mux.HandleFunc("foo.vaino.lol/", fooHandler)
+	//   mux.HandleFunc("bar.vaino.lol/", barHandler)
 	mux.HandleFunc("/", index)
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/new", snippetCreate)
 
-	// STart a new web server with the given network address to listen
+	// Start a new web server with the given network address to listen
 	// on and the servemux we just created. If http.ListenAndServe()
 	// returns an error, we use the log.Fatal() function to log the
 	// error message and exit. Note that any error returned by
