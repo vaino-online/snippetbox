@@ -18,6 +18,16 @@ const BindAddress = ":4000"
 
 // index is a catch-all handler routed at "/"
 func index(w http.ResponseWriter, r *http.Request) {
+	// Check if the request URL path exactly matches "/". If it doesn't,
+	// use the http.NotFound() function to send a 404 response to the
+	// client.
+	// Importantly, we then return from the handler, otherwise we would
+	// also write the hello message.
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
@@ -35,6 +45,14 @@ func main() {
 	// Initialize a new servemux (aka router), then register the home
 	// function as the handler for the index page
 	mux := http.NewServeMux()
+
+	// Go's servemux supports two different types of URL patterns: fixed
+	// paths and subtree paths. Fixed paths don't end in /, subtree paths
+	// do.
+	// Subtree path patterns are matched (and handled) whenever the start
+	// of a request URL matches the subtree path. Imagine a wildcard at
+	// the end of them: / = /**, /static/ = /static/**.
+
 	mux.HandleFunc("/", index)
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/new", snippetCreate)
