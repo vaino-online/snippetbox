@@ -20,6 +20,14 @@ func main() {
 	// Initialize a new servemux (aka router) to store our URL paths.
 	mux := http.NewServeMux()
 
+	// Create a static file server.
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+
+	// Register the file server as the handler for all URL paths
+	// that start with "/static/". Strip the prefix before passing
+	// the request to the file server.
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	// Go's servemux supports two different types of URL patterns: fixed
 	// paths and subtree paths. Fixed paths don't end in /, subtree paths
 	// do.
