@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // Configuration
@@ -32,22 +34,26 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display a specific snippet ..."))
+	// Extract the value of the id param from the query string and
+	// try to convert it to an integer. If it fails, send a 404.
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 0 {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Interpolate the wanted snippet id into the response
+	fmt.Fprintf(w, "Display snippet #%d", id)
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Use r.Method to check whether the request is using POST or not.
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		// Add an "Allow: POST" header to the response header map.
 		// This must be called before w.WriteHeader() or w.Write().
-		w.Header().Set("Allow", "POST")
-		// Use w.WriteHeader() to send a 405 status code and
-		// w.Write() to write a "Request method not allowed" response.
-		// w.WriteHeader() can only be called once per handler. If you
-		// don't call it explicitly, the first w.Write() call will auto-
-		// matically send a 200 OK status code.
-		w.WriteHeader(405)
-		w.Write([]byte("Request method not allowed."))
+		w.Header().Set("Allow", http.MethodPost)
+		// Send a Method Not Allowed HTTP error.
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
