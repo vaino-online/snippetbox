@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -11,7 +10,7 @@ import (
 // HTTP Handler functions
 
 // index is a catch-all handler routed at "/"
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Check if the request URL path exactly matches "/". If it doesn't,
 	// use the http.NotFound() function to send a 404 response to the
 	// client.
@@ -33,7 +32,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Load the templates or freak out and throw a 500.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -41,12 +40,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Render the base template.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Extract the value of the id param from the query string and
 	// try to convert it to an integer. If it fails, send a 404.
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -59,7 +58,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display snippet #%d", id)
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Use r.Method to check whether the request is using POST or not.
 	if r.Method != http.MethodPost {
 		// Add an "Allow: POST" header to the response header map.
